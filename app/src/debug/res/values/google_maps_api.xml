@@ -1,0 +1,19 @@
+<resources>
+    <!--
+    TODO: Before you run your application, you need a Google Maps API key.
+
+    To get one, follow this link, follow the directions and press "Create" at the end:
+
+    https://console.developers.google.com/flows/enableapi?apiid=maps_android_backend&keyType=CLIENT_SIDE_ANDROID&r=E5:9A:62:2D:F0:B4:D1:72:34:F4:8E:FC:88:AD:36:5F:06:B5:BF:CF%3Bcom.example.teo.googlemapsdrawroutebetweentwopoints
+
+    You can also add your credentials to an existing key, using this line:
+    E5:9A:62:2D:F0:B4:D1:72:34:F4:8E:FC:88:AD:36:5F:06:B5:BF:CF;com.example.teo.googlemapsdrawroutebetweentwopoints
+
+    Alternatively, follow the directions here:
+    https://developers.google.com/maps/documentation/android/start#get-key
+
+    Once you have your key (it starts with "AIza"), replace the "google_maps_key"
+    string in this file.
+    -->
+    <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyA5yqQrZsWgqupc-WWyJdloLxtU9fcN3pQ</string>
+</resources>
