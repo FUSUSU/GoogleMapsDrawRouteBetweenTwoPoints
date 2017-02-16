@@ -18,6 +18,7 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -185,6 +186,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     //Getting URL to the Google Direction API
                     String url = getUrl(origin, dest);
                     Log.d("onMapClick", url.toString());
+                    FetchUrl FetchUrl = new FetchUrl();
+
+                    // Start downloading json data from Google Directions API
+                    FetchUrl.execute(url);
+                    //move map camera
+                    mMap.moveCamera(CameraUpdateFactory.newLatLng(origin));
+                    mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
 
 
                 }
@@ -232,6 +240,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onConnected(@Nullable Bundle bundle) {
 
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(1000);
+        mLocationRequest.setFastestInterval(1000);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+        }
+
     }
 
     @Override
@@ -247,6 +266,29 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onLocationChanged(Location location) {
 
+        mLastLocation = location;
+
+        if (mCurrLocationMarker != null) {
+            mCurrLocationMarker.remove();
+        }
+
+
+        //Place current location marker
+        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+        MarkerOptions markerOptions = new MarkerOptions();
+        markerOptions.position(latLng);
+        markerOptions.title("Current Position");
+        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
+        mCurrLocationMarker = mMap.addMarker(markerOptions);
+
+        //move map camera
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
+
+        //Stop location updates
+        if (mGoogleApiClient != null){
+            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+        }
     }
 
 
@@ -323,6 +365,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             ParserTask parserTask = new ParserTask();
 
             // Invokes the thread for parsing the JSON data
+            parserTask.execute(result);
         }
     }
 
@@ -401,6 +444,41 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 else {
                     Log.d("onPostExecute","without Polylines drawn");
                 }
+            }
+        }
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_LOCATION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // Permission was grated. Do the
+                    // contacts-related task you need to do.
+
+                    if (ContextCompat.checkSelfPermission(this,
+                            Manifest.permission.ACCESS_FINE_LOCATION)
+                            == PackageManager.PERMISSION_GRANTED) {
+                        if (mGoogleApiClient == null){
+                            buildGoogleApiClient();
+                        }
+                        mMap.setMyLocationEnabled(true);
+
+                    } else {
+
+                        // Permission denied, Disable the functionality that depends on this permission.
+                        Toast.makeText(this, "permission denied", Toast.LENGTH_LONG).show();
+                    }
+
+                    return;
+                }
+
+                // other 'case' line to check for other permissions this app might request
+                // You can add here other case statements according to your requirement
             }
         }
     }
